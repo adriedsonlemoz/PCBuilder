@@ -1,0 +1,18 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #d6c8a3;
+  color: #362414;
+  font-family: 'Nunito', 'Quicksand', 'Roboto', sans-serif;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #d6c8a3; }
+::-webkit-scrollbar-thumb { background: #a6834d; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #6e5436; }
+
+@media print {
+  .d-print-none { display: none !important; }
+  body { background: white !important; color: black !important; }
+}
