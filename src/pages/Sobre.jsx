@@ -109,7 +109,7 @@ const Sobre = ({ setRoute }) => {
             🛠️
           </Typography>
           <Typography sx={{ fontWeight: 900, color: 'primary.main', fontSize: '1.5rem', textTransform: 'uppercase' }}>
-            Versão 1.0.15
+            Versão 1.0.16
           </Typography>
           <Typography sx={{ fontWeight: 'bold', color: 'text.secondary', fontSize: '0.9rem', mb: 2 }}>
             Codinome: "Meu PC"

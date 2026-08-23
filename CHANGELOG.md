@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.16 — Correção do ícone Android
+
+- Corrigido o APK que ainda exibia o ícone padrão do Capacitor na instalação e no launcher.
+- O workflow Android agora usa `public/meu-pc-icon.png` como fonte única do ícone do aplicativo.
+- São gerados automaticamente os tamanhos `mdpi`, `hdpi`, `xhdpi`, `xxhdpi` e `xxxhdpi`.
+- Os XMLs adaptativos padrão do Capacitor são removidos para impedir que sobrescrevam o ícone do Meu PC em Android 8 ou superior.
+- Adicionada validação no CI para falhar a build caso o ícone não seja aplicado corretamente.
+
 ## 1.0.15
 - Testes automatizados para armazenamento, backup, cálculos, compatibilidade e upgrades.
 - Auditoria final de persistência e build.

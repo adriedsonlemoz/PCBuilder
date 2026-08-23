@@ -36,8 +36,67 @@ jobs:
       - name: Criar projeto Android do Capacitor
         run: npx cap add android
 
+      - name: Aplicar ícone do Meu PC no Android
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ICON="public/meu-pc-icon.png"
+          RES="android/app/src/main/res"
+
+          if [ ! -f "$ICON" ]; then
+            echo "Erro: ícone não encontrado em $ICON"
+            exit 1
+          fi
+
+          # O Capacitor cria ícones adaptativos próprios em Android 8+.
+          # Se eles permanecerem, o sistema ignora os PNGs mipmap e mostra
+          # o ícone padrão do Capacitor. Removemos esses XMLs para que o
+          # launcher use diretamente o ícone oficial do Meu PC.
+          rm -f "$RES/mipmap-anydpi-v26/ic_launcher.xml"
+          rm -f "$RES/mipmap-anydpi-v26/ic_launcher_round.xml"
+
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+
+          resize_icon() {
+            local size="$1"
+            local output="$2"
+            if command -v magick >/dev/null 2>&1; then
+              magick "$ICON" -resize "${size}x${size}" -gravity center -extent "${size}x${size}" "$output"
+            else
+              convert "$ICON" -resize "${size}x${size}" -gravity center -extent "${size}x${size}" "$output"
+            fi
+          }
+
+          for spec in \
+            "mdpi:48" \
+            "hdpi:72" \
+            "xhdpi:96" \
+            "xxhdpi:144" \
+            "xxxhdpi:192"; do
+            density="${spec%%:*}"
+            size="${spec##*:}"
+            dir="$RES/mipmap-$density"
+            mkdir -p "$dir"
+            resize_icon "$size" "$dir/ic_launcher.png"
+            cp "$dir/ic_launcher.png" "$dir/ic_launcher_round.png"
+          done
+
+          echo "Ícones Android do Meu PC aplicados com sucesso."
+          find "$RES" -type f \( -name 'ic_launcher.png' -o -name 'ic_launcher_round.png' \) -print
+
       - name: Sincronizar arquivos web
         run: npx cap sync android
+
+      - name: Garantir ícone após sincronização
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          test -f android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          test ! -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          echo "Validação do ícone concluída."
 
       - name: Dar permissão ao Gradle
         run: chmod +x android/gradlew
