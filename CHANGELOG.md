@@ -1,9 +1,18 @@
 # Changelog
 
+## 1.0.17
+
+- Substituído o launcher anterior pela nova arte aprovada do Meu PC, sem redesenho.
+- Implementado Adaptive Icon real para Android 8+ via `mipmap-anydpi-v26`.
+- A arte original é usada como foreground e o background utiliza `#000003`, extraído do próprio fundo da arte.
+- Adicionados fallbacks `mipmap` para Android anterior ao 8.0.
+- O workflow agora valida as referências do launcher e compila debug e release.
+- Removidas referências e recursos do launcher padrão do Capacitor durante a geração Android.
+
 ## 1.0.16 — Correção do ícone Android
 
 - Corrigido o APK que ainda exibia o ícone padrão do Capacitor na instalação e no launcher.
-- O workflow Android agora usa `public/meu-pc-icon.png` como fonte única do ícone do aplicativo.
+- Na 1.0.16, o workflow ainda usava um PNG de launcher simples; esse mecanismo foi substituído pelo Adaptive Icon da 1.0.17.
 - São gerados automaticamente os tamanhos `mdpi`, `hdpi`, `xhdpi`, `xxhdpi` e `xxxhdpi`.
 - Os XMLs adaptativos padrão do Capacitor são removidos para impedir que sobrescrevam o ícone do Meu PC em Android 8 ou superior.
 - Adicionada validação no CI para falhar a build caso o ícone não seja aplicado corretamente.

@@ -52,7 +52,7 @@ npx cap sync android
 Ao terminar, abra a execução do workflow e baixe o artefato **MeuPC-APK**. Dentro dele estará um arquivo semelhante a:
 
 ```text
-MeuPC-1.0.16-debug.apk
+MeuPC-1.0.17-debug.apk
 ```
 
 Esse APK é adequado para instalação direta e testes. Publicação em loja exige posteriormente assinatura/release própria.
