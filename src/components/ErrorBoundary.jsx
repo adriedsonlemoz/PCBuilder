@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Button, Typography } from '@mui/material';
+import { clearAllUserData, errorStorage } from '../services/storage';
 
 // ==========================================
 class ErrorBoundary extends React.Component {
@@ -14,15 +15,12 @@ class ErrorBoundary extends React.Component {
     const stack = errorInfo?.componentStack || '';
     this.setState({ errorStack: stack });
     try {
-      const logsAntigos = JSON.parse(localStorage.getItem('pcBuilder_ErrorLog') || '[]');
-      localStorage.setItem('pcBuilder_ErrorLog', JSON.stringify([
-        { data: new Date().toLocaleString('pt-BR'), mensagem: error.message || 'Erro Desconhecido', stack, tipo: 'boundary' },
-        ...logsAntigos
-      ].slice(0, 30)));
+      const logsAntigos = errorStorage.read();
+      errorStorage.write([{ data: new Date().toLocaleString('pt-BR'), mensagem: error.message || 'Erro Desconhecido', stack, tipo: 'boundary' }, ...logsAntigos].slice(0, 30));
     } catch (e) {}
   }
   limparCacheERecarregar = () => {
-    ['pcBuilderSetups','pcBuilderCustomParts','pcBuilder_ErrorLog'].forEach(k => localStorage.removeItem(k));
+    clearAllUserData();
     window.location.reload();
   };
   copiarErro = () => {
@@ -67,7 +65,7 @@ class ErrorBoundary extends React.Component {
           <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' }, flexWrap: 'wrap', justifyContent: 'center' }}>
             <Button variant="contained" color="info" onClick={() => window.location.reload()} sx={{ fontWeight: '900', py: 1.5, px: 3 }}>🔄 Reiniciar</Button>
             <Button variant="contained" onClick={this.copiarErro} sx={{ fontWeight: '900', py: 1.5, px: 3, bgcolor: '#5a3a1a', '&:hover': { bgcolor: '#7a5a2a' } }}>📋 Copiar Erro</Button>
-            <Button variant="contained" color="error" onClick={this.limparCacheERecarregar} sx={{ fontWeight: '900', py: 1.5, px: 3 }}>🗑️ Limpar Cache</Button>
+            <Button variant="contained" color="error" onClick={this.limparCacheERecarregar} sx={{ fontWeight: '900', py: 1.5, px: 3 }}>🗑️ Apagar Dados Locais</Button>
           </Box>
         </Box>
       );

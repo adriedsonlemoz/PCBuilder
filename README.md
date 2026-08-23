@@ -1,6 +1,6 @@
-# Construir PC
+# Meu PC
 
-Aplicação React + Vite para montar, comparar e salvar configurações de PCs. A partir da versão 1.0.8, o projeto é **GitHub-first**: a mesma base gera o site no GitHub Pages e um APK Android com Capacitor através do GitHub Actions.
+Aplicação React + Vite para montar, comparar e salvar configurações de PCs. A partir da versão 1.0.15, o projeto é **GitHub-first**: a mesma base gera o site no GitHub Pages e um APK Android com Capacitor através do GitHub Actions.
 
 ## Desenvolvimento local
 
@@ -33,7 +33,7 @@ O `vite.config.js` usa caminhos relativos (`base: './'`), permitindo que o mesmo
 
 O Capacitor está configurado em `capacitor.config.json`:
 
-- App: **Construir PC**
+- App: **Meu PC**
 - ID: `com.adriedson.construirpc`
 - Conteúdo web: `dist`
 
@@ -49,10 +49,10 @@ npx cap sync android
 ./gradlew assembleDebug
 ```
 
-Ao terminar, abra a execução do workflow e baixe o artefato **ConstruirPC-APK**. Dentro dele estará um arquivo semelhante a:
+Ao terminar, abra a execução do workflow e baixe o artefato **MeuPC-APK**. Dentro dele estará um arquivo semelhante a:
 
 ```text
-ConstruirPC-1.0.8-debug.apk
+MeuPC-1.0.15-debug.apk
 ```
 
 Esse APK é adequado para instalação direta e testes. Publicação em loja exige posteriormente assinatura/release própria.

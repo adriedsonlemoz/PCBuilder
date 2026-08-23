@@ -1,7 +1,7 @@
 {
-  "name": "construir-pc",
+  "name": "meu-pc",
   "private": true,
-  "version": "1.0.8",
+  "version": "1.0.15",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "cap:sync": "npm run build && npx cap sync",
     "cap:add:android": "npx cap add android",
-    "android:sync": "npm run build && npx cap sync android"
+    "android:sync": "npm run build && npx cap sync android",
+    "test": "node --test src/tests/*.test.js"
   },
   "dependencies": {
     "@emotion/react": "^11.13.5",

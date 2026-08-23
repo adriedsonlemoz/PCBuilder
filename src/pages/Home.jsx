@@ -8,141 +8,15 @@ import {
 } from '@mui/material';
 import GameHeader from '../components/GameHeader';
 import { categoryKeys, categoryNames, dbPcParts, preDefinidos } from '../data/pcParts';
+import ComparadorConteudo from '../features/home/ComparadorConteudo';
+import { setupStorage } from '../services/storage';
+import { calculateSetupTotal, findPart } from '../domain/parts';
+import { buildUpgradeSuggestions } from '../features/home/upgradeUtils';
+
+const formatarMoeda = (valor) => Number(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 // ===== Home.js =====
 // GameHeader é global (definido em app.js)
-
-const formatarMoeda = (valor) => {
-  return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-};
-
-// ── Componente separado para o conteúdo do modal de comparação ──
-const ComparadorConteudo = ({ comparar1, comparar2, calcularTotalSetup, fechar }) => {
-  const total1 = calcularTotalSetup(comparar1);
-  const total2 = calcularTotalSetup(comparar2);
-  const diffTotal = total1 - total2;
-
-  const getPreco = (s, cat) => {
-    const sel = s.parts?.[cat];
-    if (!sel || (Array.isArray(sel) && sel.length === 0)) return 0;
-    const lista = (cat === 'mb' || cat === 'cpu') ? (dbPcParts[cat][s.parts?.socket] || []) : (dbPcParts[cat] || []);
-    const ids = Array.isArray(sel) ? sel : [sel];
-    return ids.reduce((sum, id) => { const p = lista.find(x => x.id === id); return sum + (p?.price || 0); }, 0);
-  };
-
-  const getNome = (s, cat) => {
-    const sel = s.parts?.[cat];
-    if (!sel || (Array.isArray(sel) && sel.length === 0)) return '-';
-    const lista = (cat === 'mb' || cat === 'cpu') ? (dbPcParts[cat][s.parts?.socket] || []) : (dbPcParts[cat] || []);
-    const ids = Array.isArray(sel) ? sel : [sel];
-    const cnt = {};
-    ids.forEach(id => cnt[id] = (cnt[id] || 0) + 1);
-    return Object.keys(cnt).map(id => { const p = lista.find(x => x.id === id); return p ? `${cnt[id] > 1 ? cnt[id] + 'x ' : ''}${p.name}` : id; }).join(' + ');
-  };
-
-  // Estilos reutilizáveis das células
-  const cellBase = {
-    fontSize: '0.72rem',
-    py: 0.7,
-    px: { xs: 0.4, sm: 0.8 },
-    verticalAlign: 'top',
-    whiteSpace: 'normal',
-    wordBreak: 'break-word',
-    overflowWrap: 'anywhere',
-  };
-  const cellCat = { ...cellBase, fontWeight: '900', color: 'text.secondary', textTransform: 'uppercase', fontSize: '0.65rem', whiteSpace: 'nowrap', width: '10%' };
-  const cellSetup1 = (diff) => ({ ...cellBase, fontWeight: diff ? '900' : 'bold', color: diff ? 'primary.main' : 'text.primary', textAlign: 'center', bgcolor: 'rgba(17,138,139,0.05)', width: '36%' });
-  const cellSetup2 = (diff) => ({ ...cellBase, fontWeight: diff ? '900' : 'bold', color: diff ? '#a6834d' : 'text.primary', textAlign: 'center', bgcolor: 'rgba(166,131,77,0.05)', width: '36%' });
-  const cellDiff = { ...cellBase, textAlign: 'center', width: '18%' };
-
-  return (
-    <>
-      <GameHeader title={`⚖️ ${comparar1.nome}  vs  ${comparar2.nome}`} fontSize="0.95rem" />
-      <DialogContent sx={{ p: { xs: 0.5, sm: 1 }, overflow: 'hidden' }}>
-        <Table size="small" sx={{ tableLayout: 'auto', width: '100%', borderCollapse: 'collapse' }}>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ ...cellCat, color: 'text.secondary', fontWeight: '900', fontSize: '0.65rem' }}>Cat.</TableCell>
-              <TableCell sx={{ fontWeight: '900', color: 'primary.main', fontSize: '0.75rem', textAlign: 'center', bgcolor: 'rgba(17,138,139,0.08)', px: { xs: 0.4, sm: 0.8 }, py: 0.6, wordBreak: 'break-word', width: '36%' }}>
-                {comparar1.nome}
-              </TableCell>
-              <TableCell sx={{ fontWeight: '900', color: '#a6834d', fontSize: '0.75rem', textAlign: 'center', bgcolor: 'rgba(166,131,77,0.08)', px: { xs: 0.4, sm: 0.8 }, py: 0.6, wordBreak: 'break-word', width: '36%' }}>
-                {comparar2.nome}
-              </TableCell>
-              <TableCell sx={{ fontWeight: '900', color: 'text.secondary', fontSize: '0.65rem', textAlign: 'center', textTransform: 'uppercase', px: { xs: 0.4, sm: 0.8 }, py: 0.6, width: '18%' }}>
-                Diferença
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {categoryKeys.map(cat => {
-              const v1 = getNome(comparar1, cat);
-              const v2 = getNome(comparar2, cat);
-              const p1 = getPreco(comparar1, cat);
-              const p2 = getPreco(comparar2, cat);
-              const diff = v1 !== v2;
-              const priceDiff = p1 - p2;
-              const ambosZero = p1 === 0 && p2 === 0;
-              return (
-                <TableRow key={cat} sx={{ bgcolor: diff ? 'rgba(148,24,24,0.04)' : 'transparent' }}>
-                  <TableCell sx={cellCat}>
-                    {categoryNames[cat]?.split(' ').slice(1).join(' ')}
-                  </TableCell>
-                  <TableCell sx={cellSetup1(diff)}>
-                    {v1}
-                    {p1 > 0 && <Typography component="div" sx={{ fontSize: '0.62rem', color: 'text.secondary', fontWeight: 'bold', mt: 0.2 }}>{formatarMoeda(p1)}</Typography>}
-                  </TableCell>
-                  <TableCell sx={cellSetup2(diff)}>
-                    {v2}
-                    {p2 > 0 && <Typography component="div" sx={{ fontSize: '0.62rem', color: 'text.secondary', fontWeight: 'bold', mt: 0.2 }}>{formatarMoeda(p2)}</Typography>}
-                  </TableCell>
-                  <TableCell sx={cellDiff}>
-                    {!ambosZero && priceDiff !== 0 ? (
-                      <Box>
-                        <Typography sx={{ fontSize: '0.68rem', fontWeight: '900', color: priceDiff > 0 ? '#a6834d' : 'primary.main', display: 'block' }}>
-                          {priceDiff > 0 ? `+${formatarMoeda(priceDiff)}` : `-${formatarMoeda(Math.abs(priceDiff))}`}
-                        </Typography>
-                        <Typography sx={{ fontSize: '0.58rem', fontWeight: 'bold', color: 'text.secondary', display: 'block' }}>
-                          {priceDiff > 0 ? `${comparar1.nome.split(' ')[0]} +caro` : `${comparar2.nome.split(' ')[0]} +caro`}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Typography sx={{ fontSize: '0.65rem', color: 'text.secondary', fontWeight: 'bold' }}>—</Typography>
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-            <TableRow sx={{ bgcolor: 'rgba(50,168,82,0.08)' }}>
-              <TableCell sx={{ ...cellCat, color: 'success.main' }}>💰 Total</TableCell>
-              <TableCell sx={{ fontWeight: '900', color: 'success.main', textAlign: 'center', fontSize: '0.85rem', bgcolor: 'rgba(17,138,139,0.05)', px: { xs: 0.4, sm: 0.8 }, py: 0.8 }}>
-                {formatarMoeda(total1)}
-              </TableCell>
-              <TableCell sx={{ fontWeight: '900', color: 'success.main', textAlign: 'center', fontSize: '0.85rem', bgcolor: 'rgba(166,131,77,0.05)', px: { xs: 0.4, sm: 0.8 }, py: 0.8 }}>
-                {formatarMoeda(total2)}
-              </TableCell>
-              <TableCell sx={{ textAlign: 'center', px: { xs: 0.4, sm: 0.8 }, py: 0.8 }}>
-                {diffTotal !== 0 && (
-                  <Box>
-                    <Typography sx={{ fontSize: '0.78rem', fontWeight: '900', color: diffTotal > 0 ? '#a6834d' : 'primary.main', display: 'block' }}>
-                      {diffTotal > 0 ? `+${formatarMoeda(diffTotal)}` : `-${formatarMoeda(Math.abs(diffTotal))}`}
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.62rem', fontWeight: '900', color: diffTotal < 0 ? 'success.main' : 'error.main', bgcolor: diffTotal < 0 ? 'rgba(50,168,82,0.1)' : 'rgba(148,24,24,0.1)', px: 0.6, borderRadius: '4px', display: 'inline-block', mt: 0.3 }}>
-                      {diffTotal < 0 ? `${comparar1.nome.split(' ')[0]} mais barato` : `${comparar2.nome.split(' ')[0]} mais barato`}
-                    </Typography>
-                  </Box>
-                )}
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </DialogContent>
-      <DialogActions sx={{ p: 1, justifyContent: 'center' }}>
-        <Button variant="contained" color="error" size="small" onClick={fechar}>Fechar</Button>
-      </DialogActions>
-    </>
-  );
-};
 
 const Home = ({ setRoute, setSetupParaEditar }) => {
   const [savedSetups, setSavedSetups] = useState({});
@@ -171,8 +45,7 @@ const Home = ({ setRoute, setSetupParaEditar }) => {
   // Carrega os dados blindado contra erros
   useEffect(() => {
     try {
-      const localData = localStorage.getItem("pcBuilderSetups");
-      setSavedSetups(localData ? JSON.parse(localData) : {});
+      setSavedSetups(setupStorage.read());
     } catch (error) {
       console.error("Erro ao carregar setups salvos:", error);
       setSavedSetups({});
@@ -206,11 +79,7 @@ const Home = ({ setRoute, setSetupParaEditar }) => {
   const showToast = (message, severity = 'success') => setToast({ open: true, message, severity });
   const closeToast = () => setToast({ ...toast, open: false });
 
-  const getPecaDados = (cat, id, socket) => {
-    if (typeof dbPcParts === 'undefined' || !dbPcParts[cat]) return { name: "Peça não encontrada", price: 0 };
-    let lista = (cat === 'mb' || cat === 'cpu') ? (dbPcParts[cat][socket] || []) : (dbPcParts[cat] || []);
-    return lista.find(p => p.id === id) || { name: "Peça não encontrada", price: 0 };
-  };
+  const getPecaDados = (cat, id, socket) => findPart(cat, id, socket) || { name: "Peça não encontrada", price: 0 };
 
   const abrirVisualizacao = (nome, isPreset = false) => {
     const dados = isPreset ? preDefinidos[nome] : savedSetups[nome];
@@ -255,7 +124,7 @@ const Home = ({ setRoute, setSetupParaEditar }) => {
   const confirmarApagar = () => {
     const novosSetups = { ...savedSetups };
     delete novosSetups[setupParaApagar];
-    localStorage.setItem("pcBuilderSetups", JSON.stringify(novosSetups));
+    setupStorage.write(novosSetups);
     if (window.pcBuilderLogAcao) window.pcBuilderLogAcao('Setup apagado', `Nome: "${setupParaApagar}"`);
     setSavedSetups(novosSetups);
     setModalApagarAberto(false);
@@ -270,77 +139,17 @@ const Home = ({ setRoute, setSetupParaEditar }) => {
 
   const todasListas = { ...savedSetups, ...Object.fromEntries(Object.keys(preDefinidos).map(k => [k, preDefinidos[k]])) };
 
-  const calcularTotalSetup = (setupObj) => {
-    if (!setupObj || !setupObj.parts) return 0;
-    let sum = 0;
-    categoryKeys.forEach(cat => {
-      const sel = setupObj.parts[cat];
-      if (!sel) return;
-      const lista = (cat === 'mb' || cat === 'cpu') ? (dbPcParts[cat][setupObj.parts.socket] || []) : (dbPcParts[cat] || []);
-      const ids = Array.isArray(sel) ? sel : [sel];
-      ids.forEach(id => { const p = lista.find(x => x.id === id); if (p) sum += p.price; });
-    });
-    return sum;
-  };
+  const calcularTotalSetup = calculateSetupTotal;
 
-  // Calcula sugestões de upgrade dado um orçamento extra
-  const sugestoesUpgrade = useMemo(() => {
-    if (!setupParaUpgrade || !setupParaUpgrade.parts || orcamentoUpgrade <= 0) return [];
-    const parts = setupParaUpgrade.parts;
-    const socket = parts.socket;
-    const sugestoes = [];
-
-    // Categorias impactantes para upgrade
-    const catsUpgrade = [
-      { cat: 'gpu', label: '🎮 Placa Gráfica', multiple: true },
-      { cat: 'cpu', label: '🧠 Processador', multiple: false },
-      { cat: 'ram', label: '⚡ Memória RAM', multiple: true },
-      { cat: 'storage', label: '💾 Armazenamento', multiple: true },
-      { cat: 'psu', label: '🔋 Fonte', multiple: false },
-      { cat: 'monitor', label: '🖥️ Monitor', multiple: false },
-    ];
-
-    catsUpgrade.forEach(({ cat, label, multiple }) => {
-      const lista = (cat === 'mb' || cat === 'cpu') ? (dbPcParts[cat][socket] || []) : (dbPcParts[cat] || []);
-      if (!lista || lista.length === 0) return;
-
-      // Preço atual da peça selecionada
-      const selAtual = parts[cat];
-      if (!selAtual) return;
-      const idsAtuais = Array.isArray(selAtual) ? selAtual : [selAtual];
-      // Para múltiplos, usar preço da mais cara individualmente
-      const precoAtual = Math.max(...idsAtuais.map(id => (lista.find(p => p.id === id) || { price: 0 }).price));
-      const pecaAtual = lista.find(p => p.id === (Array.isArray(selAtual) ? selAtual[0] : selAtual));
-
-      if (precoAtual <= 0) return;
-
-      // Encontrar melhor upgrade dentro do orçamento
-      const candidatos = lista
-        .filter(p => p.price > precoAtual && (p.price - precoAtual) <= orcamentoUpgrade)
-        .sort((a, b) => b.price - a.price);
-
-      if (candidatos.length === 0) return;
-      const melhor = candidatos[0];
-      const diferenca = melhor.price - precoAtual;
-
-      sugestoes.push({
-        cat, label,
-        atual: pecaAtual?.name || 'Atual',
-        precoAtual,
-        sugerido: melhor.name,
-        precoSugerido: melhor.price,
-        diferenca,
-        impacto: cat === 'gpu' ? 5 : cat === 'cpu' ? 4 : cat === 'ram' ? 3 : 2,
-      });
-    });
-
-    // Ordenar por impacto e depois por diferença de preço
-    return sugestoes.sort((a, b) => b.impacto - a.impacto || a.diferenca - b.diferenca);
-  }, [setupParaUpgrade, orcamentoUpgrade]);
+  // Sugestões inteligentes por ganho estimado / custo adicional.
+  const sugestoesUpgrade = useMemo(
+    () => buildUpgradeSuggestions(setupParaUpgrade, orcamentoUpgrade),
+    [setupParaUpgrade, orcamentoUpgrade],
+  );
 
   // Restaurar uma versão do histórico
   const handleRestaurarVersao = (nome, versao) => {
-    const allSetups = JSON.parse(localStorage.getItem("pcBuilderSetups") || "{}");
+    const allSetups = setupStorage.read();
     if (!allSetups[nome]) return;
     const historico = allSetups[nome].history || [];
     const versaoAtual = { ...allSetups[nome] };
@@ -348,7 +157,7 @@ const Home = ({ setRoute, setSetupParaEditar }) => {
     // Colocar atual no histórico e restaurar a versão escolhida
     historico.unshift(versaoAtual);
     allSetups[nome] = { ...versao, history: historico.slice(0, 10) };
-    localStorage.setItem("pcBuilderSetups", JSON.stringify(allSetups));
+    setupStorage.write(allSetups);
     if (window.pcBuilderLogAcao) window.pcBuilderLogAcao('Versão restaurada', `Setup: "${nome}" | Versão de ${versao.date}`);
     setSavedSetups({ ...allSetups });
     setSetupSelecionado({ nome, ...allSetups[nome] });

@@ -1,19 +1,7 @@
 import { useState } from 'react';
 import { dbPcParts } from '../../../data/pcParts';
 import { allowedRamMap } from '../builderConfig';
-
-const CUSTOM_PARTS_KEY = 'pcBuilderCustomParts';
-const EDITED_PARTS_KEY = 'pcBuilderEditedParts';
-
-const readJson = (key, fallback) => {
-  try {
-    return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
-  } catch {
-    return fallback;
-  }
-};
-
-const writeJson = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+import { partsStorage } from '../../../services/storage';
 
 const getCategoryCollection = (category, socket) => {
   if (category === 'mb' || category === 'cpu') {
@@ -58,8 +46,8 @@ const usePartManager = ({
   const executarExclusaoPeca = () => {
     if (!pecaParaDeletar) return;
 
-    const customParts = readJson(CUSTOM_PARTS_KEY, []);
-    writeJson(CUSTOM_PARTS_KEY, customParts.filter(item => item.peca.id !== pecaParaDeletar.id));
+    const customParts = partsStorage.readCustom();
+    partsStorage.writeCustom(customParts.filter(item => item.peca.id !== pecaParaDeletar.id));
 
     const collection = getCategoryCollection(categoriaAtualKey, setup.socket);
     const index = collection.findIndex(item => item.id === pecaParaDeletar.id);
@@ -109,18 +97,18 @@ const usePartManager = ({
     }
 
     if (editIsCustom) {
-      const customParts = readJson(CUSTOM_PARTS_KEY, []);
+      const customParts = partsStorage.readCustom();
       customParts.forEach(saved => {
         if (saved.peca.id === editPecaId) {
           saved.peca.name = editPecaNome.trim();
           saved.peca.price = precoNum;
         }
       });
-      writeJson(CUSTOM_PARTS_KEY, customParts);
+      partsStorage.writeCustom(customParts);
     } else {
-      const editedParts = readJson(EDITED_PARTS_KEY, {});
+      const editedParts = partsStorage.readEdited();
       editedParts[editPecaId] = { name: editPecaNome.trim(), price: precoNum };
-      writeJson(EDITED_PARTS_KEY, editedParts);
+      partsStorage.writeEdited(editedParts);
     }
 
     setModalEdicaoAberto(false);
@@ -194,9 +182,9 @@ const usePartManager = ({
 
     getCategoryCollection(categoriaAtualKey, setup.socket).push(novaPeca);
 
-    const customParts = readJson(CUSTOM_PARTS_KEY, []);
+    const customParts = partsStorage.readCustom();
     customParts.push({ cat: categoriaAtualKey, socket: setup.socket, peca: novaPeca });
-    writeJson(CUSTOM_PARTS_KEY, customParts);
+    partsStorage.writeCustom(customParts);
 
     if (aceitaMultiplos.includes(categoriaAtualKey)) {
       setSetup(prev => ({ ...prev, [categoriaAtualKey]: [...(prev[categoriaAtualKey] || []), novoId] }));

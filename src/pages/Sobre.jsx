@@ -7,6 +7,7 @@ import {
   ThemeProvider, Toolbar, Tooltip, Typography, createTheme
 } from '@mui/material';
 import GameHeader from '../components/GameHeader';
+import { errorStorage } from '../services/storage';
 
 // ===== Sobre.js =====
 // GameHeader é global (definido em app.js)
@@ -21,8 +22,7 @@ const Sobre = ({ setRoute }) => {
   // Quando o componente carrega, ele puxa o Log de Erros salvo no ErrorBoundary (se existir)
   useEffect(() => {
     try {
-      const errosSalvos = JSON.parse(localStorage.getItem('pcBuilder_ErrorLog') || '[]');
-      setLogErros(errosSalvos);
+      setLogErros(errorStorage.read());
     } catch (e) {
       console.log("Nenhum log de erro encontrado.");
     }
@@ -37,7 +37,7 @@ const Sobre = ({ setRoute }) => {
   };
 
   const handleClearLog = () => {
-    localStorage.removeItem('pcBuilder_ErrorLog');
+    errorStorage.clear();
     setLogErros([]);
     showToast('Log de erros esvaziado!', 'success');
   };
@@ -103,16 +103,16 @@ const Sobre = ({ setRoute }) => {
           1. INFORMAÇÕES GERAIS
           ========================================================= */}
       <Card sx={{ mb: 3, p: 0, overflow: 'hidden', border: '3px solid #118a8b' }}>
-        <GameHeader title="Oficina Tática PC Builder" />
+        <GameHeader title="Meu PC" />
         <Box sx={{ p: 3, bgcolor: '#e2d5b5', textAlign: 'center' }}>
           <Typography sx={{ fontSize: '4rem', filter: 'drop-shadow(2px 4px 4px rgba(0,0,0,0.3))', lineHeight: 1, mb: 1 }}>
             🛠️
           </Typography>
           <Typography sx={{ fontWeight: 900, color: 'primary.main', fontSize: '1.5rem', textTransform: 'uppercase' }}>
-            Versão 1.0.8
+            Versão 1.0.15
           </Typography>
           <Typography sx={{ fontWeight: 'bold', color: 'text.secondary', fontSize: '0.9rem', mb: 2 }}>
-            Codinome: "Gargalo Zero"
+            Codinome: "Meu PC"
           </Typography>
           <Divider sx={{ borderColor: '#a6834d', opacity: 0.5, mb: 2 }} />
           <Typography sx={{ fontSize: '0.85rem', color: 'text.primary', textAlign: 'justify', fontWeight: 'bold' }}>

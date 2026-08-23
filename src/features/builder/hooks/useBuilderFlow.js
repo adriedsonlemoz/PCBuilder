@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { categoryKeys, categoryNames } from '../../../data/pcParts';
 import { multiSelectCategories } from '../builderConfig';
-import { validarFonte, validarGabinete } from '../builderUtils';
+import { validarCompatibilidadeCompleta } from '../builderUtils';
 
 const normalizarSetup = (parts = {}) => {
   const setup = { ...parts };
@@ -115,15 +115,9 @@ const useBuilderFlow = ({ setupInicial, mostrarErro }) => {
       return;
     }
 
-    const erroFonte = validarFonte(setup);
-    if (erroFonte) {
-      mostrarErro(erroFonte.titulo, erroFonte.msg);
-      return;
-    }
-
-    const erroGabinete = validarGabinete(setup);
-    if (erroGabinete) {
-      mostrarErro(erroGabinete.titulo, erroGabinete.msg);
+    const erroCompatibilidade = validarCompatibilidadeCompleta(setup);
+    if (erroCompatibilidade) {
+      mostrarErro(erroCompatibilidade.titulo, erroCompatibilidade.msg);
       return;
     }
 

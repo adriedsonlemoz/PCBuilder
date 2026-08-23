@@ -1,3 +1,5 @@
+import { partsStorage } from '../services/storage.js';
+
 // ==========================================
 // BANCO DE DADOS GLOBAL (PC Builder)
 // Otimizado: Máx 15 itens por categoria para performance
@@ -583,53 +585,38 @@ const preDefinidos = {
 };
 
 // ==========================================
-// INJETOR DE PEÇAS MANUAIS
+// INJETOR DE PEÇAS PERSISTIDAS
+// A persistência fica centralizada em services/storage.js.
 // ==========================================
 try {
-  const customParts = JSON.parse(localStorage.getItem('pcBuilderCustomParts') || '[]');
+  const customParts = partsStorage.readCustom();
   customParts.forEach(item => {
     const { cat, socket, peca } = item;
     if (cat === 'mb' || cat === 'cpu') {
-      if (dbPcParts[cat] && dbPcParts[cat][socket]) {
-        if (!dbPcParts[cat][socket].find(p => p.id === peca.id)) {
-          dbPcParts[cat][socket].push(peca);
-        }
+      if (dbPcParts[cat] && dbPcParts[cat][socket] && !dbPcParts[cat][socket].find(p => p.id === peca.id)) {
+        dbPcParts[cat][socket].push(peca);
       }
-    } else {
-      if (dbPcParts[cat]) {
-        if (!dbPcParts[cat].find(p => p.id === peca.id)) {
-          dbPcParts[cat].push(peca);
-        }
-      }
+    } else if (dbPcParts[cat] && !dbPcParts[cat].find(p => p.id === peca.id)) {
+      dbPcParts[cat].push(peca);
     }
   });
-} catch (e) {
-  console.log("Erro ao injetar peças customizadas", e);
-}
 
-// ==========================================
-// INJETOR DE PEÇAS OFICIAIS EDITADAS
-// ==========================================
-try {
-  const editados = JSON.parse(localStorage.getItem('pcBuilderEditedParts') || '{}');
-  Object.keys(editados).forEach(id => {
-      const editData = editados[id];
-      categoryKeys.forEach(cat => {
-          if (cat === 'mb' || cat === 'cpu') {
-              if(dbPcParts[cat]){
-                Object.keys(dbPcParts[cat]).forEach(sock => {
-                    const p = dbPcParts[cat][sock].find(i => i.id === id);
-                    if (p) { p.name = editData.name; p.price = editData.price; }
-                });
-              }
-          } else if (dbPcParts[cat]) {
-              const p = dbPcParts[cat].find(i => i.id === id);
-              if (p) { p.name = editData.name; p.price = editData.price; }
-          }
-      });
+  const editados = partsStorage.readEdited();
+  Object.entries(editados).forEach(([id, editData]) => {
+    categoryKeys.forEach(cat => {
+      if (cat === 'mb' || cat === 'cpu') {
+        Object.values(dbPcParts[cat] || {}).forEach(lista => {
+          const peca = lista.find(item => item.id === id);
+          if (peca) Object.assign(peca, { name: editData.name, price: editData.price });
+        });
+      } else {
+        const peca = (dbPcParts[cat] || []).find(item => item.id === id);
+        if (peca) Object.assign(peca, { name: editData.name, price: editData.price });
+      }
+    });
   });
-} catch(e) { 
-  console.log("Erro ao injetar edições", e); 
+} catch (error) {
+  console.log('Erro ao aplicar peças persistidas', error);
 }
 
 

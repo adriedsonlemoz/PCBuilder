@@ -1,22 +1,9 @@
 import { useState } from 'react';
 import { categoryKeys, dbPcParts } from '../../../data/pcParts';
 import { calcularTotalAtual } from '../builderUtils';
+import { setupStorage } from '../../../services/storage';
 
-const SETUPS_KEY = 'pcBuilderSetups';
 const MAX_HISTORY = 10;
-
-const readSetups = () => {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(SETUPS_KEY) || '{}');
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
-  } catch {
-    return {};
-  }
-};
-
-const writeSetups = (setups) => {
-  localStorage.setItem(SETUPS_KEY, JSON.stringify(setups));
-};
 
 const createVersion = (setup) => {
   const total = calcularTotalAtual(setup, categoryKeys);
@@ -56,7 +43,7 @@ const useSetupStorage = ({ setup, setupParaEditar, setRoute, mostrarErro }) => {
     const nomeFinal = validateName();
     if (!nomeFinal) return;
 
-    const allSetups = readSetups();
+    const allSetups = setupStorage.read();
     const existing = allSetups[nomeFinal];
 
     if (existing && !keepHistory && !overwrite) {
@@ -74,7 +61,7 @@ const useSetupStorage = ({ setup, setupParaEditar, setRoute, mostrarErro }) => {
     }
 
     allSetups[nomeFinal] = nextVersion;
-    writeSetups(allSetups);
+    setupStorage.write(allSetups);
     finishSave();
   };
 

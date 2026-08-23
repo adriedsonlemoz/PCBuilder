@@ -1,5 +1,39 @@
 # Changelog
 
+## 1.0.15
+- Testes automatizados para armazenamento, backup, cálculos, compatibilidade e upgrades.
+- Auditoria final de persistência e build.
+- Nome oficial consolidado como **Meu PC** e novo ícone integrado.
+
+## 1.0.14
+- Sugestões de upgrade passam a considerar ganho estimado e custo-benefício, não somente preço.
+- Avaliação de equilíbrio CPU/GPU refinada com pontuação relativa e severidade.
+
+## 1.0.13
+- Compatibilidade ampliada para RAM/placa-mãe, plataforma, gabinete e fonte.
+- Lista de gabinetes e fontes passa a filtrar opções incompatíveis quando possível.
+- Recomendação de fonte inclui margem estimada de 25% e consumo base do sistema.
+
+## 1.0.12
+- Cálculo de total, busca de peças, preço e nomes centralizados em `domain/parts.js`.
+- Home, Builder e comparador reutilizam a mesma fonte de regras.
+
+## 1.0.11
+- Backup versionado (v2) com setups, peças manuais e edições de peças oficiais.
+- Compatibilidade com backup legado v1 mantida.
+- Interface deixa claro que Base64 é codificação, não criptografia.
+
+## 1.0.10
+- Todo acesso ao `localStorage` centralizado em `services/storage.js`.
+- Chaves legadas preservadas para manter os dados existentes do usuário.
+- Logs, setups e peças passam a usar APIs de persistência únicas.
+
+## 1.0.9
+- `Home.jsx` refatorada, com comparador e regras de upgrade extraídos para módulos próprios.
+- Comportamento visual e fluxo principal preservados nesta etapa.
+
+# Changelog
+
 ## 1.0.8
 
 - Projeto passa a ser GitHub-first, sem configuração dedicada à Vercel.

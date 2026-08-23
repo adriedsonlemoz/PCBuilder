@@ -104,7 +104,7 @@ const App = () => {
         PaperProps={{ sx: { bgcolor: '#ebdcb8', width: 240, borderRight: '3px solid #a6834d' } }}>
         <Box sx={{ bgcolor: 'primary.main', p: 2, borderBottom: '3px solid #a6834d' }}>
           <Typography sx={{ color: 'primary.contrastText', fontWeight: '900', fontSize: '1.1rem', textShadow: '1px 2px 2px rgba(0,0,0,0.5)' }}>
-            🖥️ PC BUILDER
+            🖥️ MEU PC
           </Typography>
           <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontWeight: 'bold', fontSize: '0.75rem' }}>
             Navegação
@@ -138,7 +138,7 @@ const App = () => {
       {/* RODAPÉ */}
       <Box sx={{ p: 1.5, textAlign: 'center', bgcolor: 'primary.main', borderTop: '4px solid', borderColor: 'secondary.main' }}>
         <Typography variant="caption" sx={{ color: 'primary.contrastText', fontWeight: 'bold', textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
-          PC Builder Ultimate · Organização Tática
+          Meu PC · Monte, compare e evolua seu computador
         </Typography>
       </Box>
     </ThemeProvider>
