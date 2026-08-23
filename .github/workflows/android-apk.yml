@@ -22,7 +22,7 @@ jobs:
           node-version: 22
 
       - name: Configurar Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -48,10 +48,10 @@ jobs:
           sudo apt-get install -y -qq imagemagick
 
       - name: Configurar Adaptive Icon do Meu PC
-        run: .github/scripts/apply-android-icon.sh
+        run: bash .github/scripts/apply-android-icon.sh
 
       - name: Verificar Adaptive Icon e remover referências antigas
-        run: .github/scripts/verify-android-icon.sh
+        run: bash .github/scripts/verify-android-icon.sh
 
       - name: Dar permissão ao Gradle
         run: chmod +x android/gradlew

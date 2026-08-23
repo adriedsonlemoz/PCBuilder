@@ -1,3 +1,9 @@
+# 1.0.18
+
+- Corrige o GitHub Actions em ambientes onde o bit executável dos scripts `.sh` não é preservado pelo Git/ZIP.
+- Os scripts de Adaptive Icon agora são invocados explicitamente com `bash`, evitando `Permission denied` (exit code 126).
+- Atualiza `actions/setup-java` de v4 para v5.
+
 # Changelog
 
 ## 1.0.17
